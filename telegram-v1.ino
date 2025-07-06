@@ -1,5 +1,8 @@
 #if 1
 
+#include <secretCredentials.h>
+
+
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>   //By Brian Lough: https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot
@@ -7,10 +10,11 @@
 
 #include <SPIFFS.h>
 
+/*
 //LCD LIBRARIES
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27,16,2);
+LiquidCrystal_I2C lcd(0x27,16,2); */
 
 int displayDelay = 1000;
 
@@ -27,13 +31,13 @@ String botUsersId[maxbotUsers];
 
 
 WiFiClientSecure client;
-UniversalTelegramBot bot(BOTtoken, client);
+UniversalTelegramBot bot(botToken, client);
 
 // Checks for new messages every 1 second.
 int botRequestDelay = 1000;
 unsigned long lastTimeBotRan;
 
-#define scrollSpeed = 300;
+#define scrollSpeed 300
 void printTitle() {
   // INITIALIZE LCD
   Wire.begin();
@@ -41,21 +45,21 @@ void printTitle() {
   lcd.backlight();
   lcd.setCursor(0, 0);
   
-  int projectTitleLength = strlen(projectTitle);
-  int lcdWidth = 16; // for a 16x2 LCD
+  int projectTitleLength = strlen(projectTitle); // strlen for #define and char[] arrray but .length of String (a class)
+  int lcdWidth = 16; // 16x2 LCD
 
   // If text fits within screen, print directly
   if (projectTitleLength <= lcdWidth) {
     lcd.setCursor(0, 0);
-    lcd.print(text);
+    lcd.print(projectTitle);
     return;
   }
 
   
-  String paddedText = String(projectTitle) + "                "; // I added space to scroll smoothly
-  for (int i = 0; i <= paddedText.length() - lcdWidth; i++) {
+  String paddedProjectTitle = String(projectTitle) + "                "; // I added space to scroll smoothly
+  for (int i = 0; i <= paddedProjectTitle.length() - lcdWidth; i++) {
     lcd.setCursor(0, 0);
-    lcd.print(paddedText.substring(i, i + lcdWidth));
+    lcd.print(paddedProjectTitle.substring(i, i + lcdWidth));
     delay(scrollSpeed);
   }
 }
@@ -195,7 +199,7 @@ String commandsDescription[] = {
       "/offCooker to off the cooker\n",
       "/checkStatus to check if cooker is on or off\n",
       "/listUsers to list this telegram bot users\n",
-      // "/deleteUserId to delete a user\n",
+      "/deleteUserId to delete a user\n",
       "/addUser to add a user."
     };
 
@@ -326,7 +330,7 @@ void handleNewMessages(int numNewMessages) {
 
 void connectWifi() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, "passwording");
+  WiFi.begin(wifiSsid, wifiPassword);
   #ifdef ESP32
     client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Add root certificate for api.telegram.org
   #endif
