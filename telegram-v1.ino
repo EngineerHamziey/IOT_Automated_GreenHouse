@@ -10,11 +10,11 @@
 
 #include <SPIFFS.h>
 
-/*
+
 //LCD LIBRARIES
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27,16,2); */
+LiquidCrystal_I2C lcd(0x27,16,2); 
 
 int displayDelay = 1000;
 
@@ -205,7 +205,7 @@ String commandsDescription[] = {
 
 bool cookerOn = false;
 
-void handleStart(String chatId, String userName);
+void handleStart(String command, String chatId, String userName);
 void turnOnCooker(String command, String chatId, String userName);
 void checkCookerStatus(String command, String chatId, String userName);
 void turnOffCooker(String command, String chatId, String userName);
@@ -215,7 +215,7 @@ void addUser(String command, String chatId, String userName);
 
 // array of function pointer
 // void (*commandActions[])() = { // no parameter
-void (*commandActions[])(String, String, String) = { // the string, sgring is to show that the fucntions takes parameter ========    SO NOW, EVERY FUNCTION IN THAT ARRAY MUST ACCEPT 3 PARAMETERS, WHERTHER YOU NEED IT OR NOT
+void (*commandActions[])(String, String, String) = { // the string, string is to show that the fucntions takes parameter ========    SO NOW, EVERY FUNCTION IN THAT ARRAY MUST ACCEPT 3 PARAMETERS, WHERTHER YOU NEED IT OR NOT
   handleStart,
   turnOnCooker,
   checkCookerStatus,
@@ -349,7 +349,7 @@ void connectWifi() {
 void setup() {
   Serial.begin(115200); // initialize serial communication
 
-  printTitle();
+  // printTitle();
   
   // Connect to Wi-Fi
   connectWifi();
@@ -371,7 +371,7 @@ void loop() {
   }
 }
 
-void handleStart(String chatId, String userName, String command) {
+void handleStart(String command, String chatId, String userName) {
   String msg = "Welcome, to ";
   msg += projectTitle;
   msg += " Mr/Mrs ";
@@ -380,11 +380,16 @@ void handleStart(String chatId, String userName, String command) {
   msg += "Use the following commands to interact with the ";
   msg += projectTitle;
   msg += ".\n\n";
+  // bot.sendMessage(chatId, "START message received + CHATID: ", "");
+  // bot.sendMessage(chatId, msg, "");
   for( int count = 0; count < sizeof(commandsDescription)/sizeof(commandsDescription[0]); count++) {
     msg += commandsDescription[count];
   }
+  // Serial.println("handle start msg:    \n\n + CHATID: " + String(chatId));
+  // Serial.println(msg);
 
   bot.sendMessage(chatId, msg, "");
+  Serial.println("Start sent to : " + chatId);
 }
 
 void turnOnCooker(String command, String chatId, String userName) {
