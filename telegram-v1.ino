@@ -358,6 +358,7 @@ void setup() {
   // botUsersId[0] = adminChatId; //add this using add function
 }
 
+// the loop should be a task for printing to lcd with priority 1, then handleNewMessages should be a task for telegram bot with priority 2 and sensor readings should be gathered with priority 2 every 2 seconds so as not to miss sensor data
 void loop() {
   if (millis() > lastTimeBotRan + botRequestDelay)  {
     int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
