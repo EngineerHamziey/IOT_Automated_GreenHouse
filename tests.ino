@@ -1,4 +1,4 @@
-#if 1
+#if 0
 
 #include "DHT.h"
 
@@ -8,7 +8,7 @@
 #define displayDelay 1500
 
 #define buzzerPin 13 // NOW WORKING
-#define pumpPin 23 // 
+#define pumpPin 23 // NOW WORKING
 #define lightPin 25 // NOW WORKING
 #define fanPin 26 // NOW WORKINGs
 #define tungstenBulbPin 27 // NOW WORKING
