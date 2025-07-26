@@ -194,34 +194,25 @@ bool isUserRegistered(String userId) {
   return false;
 }
 
-String commandList[] = {"/start", "/onCooker", "/checkStatus", "/offCooker","/listUsers", "/deleteUserId", "/addUser"};
+String commandList[] = {"/start", "/checkStatus","/listUsers", "/deleteUserId", "/addUser"};
 String commandsDescription[] = {
       "/start to view the list of commands\n",
-      "/onCooker to turn on the cooker\n",
-      "/offCooker to off the cooker\n",
       "/checkStatus to check if cooker is on or off\n",
       "/listUsers to list this telegram bot users\n",
       "/deleteUserId to delete a user\n",
       "/addUser to add a user."
     };
 
-bool cookerOn = false;
-
 void handleStart(String command, String chatId, String userName);
-void turnOnCooker(String command, String chatId, String userName);
-void checkCookerStatus(String command, String chatId, String userName);
-void turnOffCooker(String command, String chatId, String userName);
+void checkGreenHouseStatus(String command, String chatId, String userName);
 void listUsers(String command, String chatId, String userName);
 void deleteUser(String command, String chatId, String userName);
 void addUser(String command, String chatId, String userName);
 
-// array of function pointer
-// void (*commandActions[])() = { // no parameter
+
 void (*commandActions[])(String, String, String) = { // the string, string is to show that the fucntions takes parameter ========    SO NOW, EVERY FUNCTION IN THAT ARRAY MUST ACCEPT 3 PARAMETERS, WHERTHER YOU NEED IT OR NOT
   handleStart,
-  turnOnCooker,
-  checkCookerStatus,
-  turnOffCooker,
+  checkGreenHouseStatus,
   listUsers,
   deleteUser,
   addUser
@@ -381,7 +372,8 @@ void setup() {
 
 
 float humidity = 0.0, temperature = 0.0;
-int moistureValue = 0;
+int moistureValue = 0, ldrValue = 0;
+
 void loop() {
   moistureValue = analogRead(soilMoistureSensorPin);  // Read analog value (0 - 4095)
   humidity = dht.readHumidity();
@@ -404,7 +396,7 @@ void loop() {
   vTaskDelay(2000/portTICK_PERIOD_MS);//read dht every 1 to 2 secs
 }
 
-String getSoilMoistureLevel() {
+String getSoilMoistureLevel(int moistureValue) {
     // Map moisture to percentage: 100% = wet (low value), 0% = dry (high value)
   int moisturePercent = map(moistureValue, 4095, 1500, 0, 100); 
   moisturePercent = constrain(moisturePercent, 0, 100);
@@ -467,22 +459,38 @@ void handleStart(String command, String chatId, String userName) {
   Serial.println("Start sent to : " + chatId);
 }
 
-void turnOnCooker(String command, String chatId, String userName) {
-  // digitalWrite(relayPin, HIGH);
-  cookerOn = true;
-  bot.sendMessage(chatId, "Cooker turned ON ✅", "");
+void checkGreenHouseStatus(String command, String chatId, String userName) {
+  float temperature = dht.readTemperature();     // Read temperature in Celsius
+  float humidity = dht.readHumidity();           // Read humidity
+  int moistureValue = analogRead(soilMoistureSensorPin); // Read soil moisture
+  int lightValue = analogRead(ldrPin);           // Read light level from LDR
+
+  // Fallback in case DHT reading fails
+  if (isnan(temperature)) temperature = 0.0;
+  if (isnan(humidity)) humidity = 0.0;
+   // Determine device states
+  String buzzerState = digitalRead(buzzerPin) ? "ON" : "OFF";
+  String pumpState = digitalRead(pumpPin) ? "ON" : "OFF";
+  String lightState = digitalRead(lightPin) ? "ON" : "OFF";
+  String fanState = digitalRead(fanPin) ? "ON" : "OFF";
+  String bulbState = digitalRead(tungstenBulbPin) ? "ON" : "OFF";
+
+  // Construct the message
+  String status = "👨‍🌾 *Greenhouse Status*\n\n";
+  status += "🌡 Temperature: " + String(temperature, 1) + "°C\n";
+  status += "💧 Humidity: " + String(humidity, 1) + "%\n";
+  status += "🌱 Soil Moisture: " + String(moistureValue) + "\n";
+  status += "☀️ Light Intensity (LDR): " + String(ldrValue) + "\n\n";
+  status += "🔌 *Device States:*\n";
+  status += "🔊 Buzzer: " + buzzerState + "\n";
+  status += "💦 Pump: " + pumpState + "\n";
+  status += "💡 Light: " + lightState + "\n";
+  status += "🌬 Fan: " + fanState + "\n";
+  status += "🔥 Tungsten Bulb: " + bulbState + "\n";
+
+  bot.sendMessage(chatId, status, "Markdown");
 }
 
-void checkCookerStatus(String command, String chatId, String userName) {
-  String status = cookerOn ? "Cooker is ON 🔥" : "Cooker is OFF ❄️";
-  bot.sendMessage(chatId, status, "");
-}
-
-void turnOffCooker(String command, String chatId, String userName) {
-  // digitalWrite(relayPin, LOW);
-  cookerOn = false;
-  bot.sendMessage(chatId, "Cooker turned OFF 📴", "");
-}
 
 void listUsers(String command, String chatId, String userName) {
   String msg = "";
